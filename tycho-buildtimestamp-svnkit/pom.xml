@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- - Copyright (c) 2012 Sonatype Inc. and others. - All rights reserved. 
+	This program and the accompanying materials - are made available under the 
+	terms of the Eclipse Public License v1.0 - which accompanies this distribution, 
+	and is available at - http://www.eclipse.org/legal/epl-v10.html - - Contributors: 
+	- Sonatype Inc. - initial API and implementation -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+  <groupId>com.techadvantage.tycho.extras</groupId>
+  <artifactId>tycho-buildtimestamp-svnkit</artifactId>
+ 
+	<prerequisites>
+		<maven>3.0</maven>
+    </prerequisites>
+    
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven-version>3.0</maven-version>
+		<jgit-version>2.0.0.201206130900-r</jgit-version>
+		<tycho-version>0.17.0-SNAPSHOT</tycho-version>
+	</properties>
+	
+	 <version>${tycho-version}</version>
+	 
+	<distributionManagement>
+  <!-- Publish versioned releases here -->
+  <repository>
+    <id>tad-nexus</id>
+    <url>https://mvn.tech-advantage.com/content/repositories/releases</url>
+  </repository>
+ 
+  <!-- Publish snapshots here -->
+  <snapshotRepository>
+    <id>tad-nexus</id>
+    <url>https://mvn.tech-advantage.com/content/repositories/snapshots</url>
+  </snapshotRepository>
+</distributionManagement>
+
+<repositories>
+    <repository>
+        <id>tad-nexus</id>
+        <name>My Public Repository</name>
+        <url>https://mvn.tech-advantage.com/content/groups/public</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+    		<!-- <repository>
+			<id>tycho-snapshots</id>
+			<url>https://oss.sonatype.org/content/groups/public</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository> -->
+    
+</repositories>
+
+<pluginRepositories>
+    <pluginRepository>
+        <id>tad-nexus</id>
+        <name>example</name>
+        <url>https://mvn.tech-advantage.com/content/groups/public</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </pluginRepository>
+    
+    <!--	<pluginRepository>
+			<id>tycho-snapshots</id>
+            <url>https://oss.sonatype.org/content/groups/public</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository> -->
+		
+</pluginRepositories>
+		
+	
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>tycho-packaging-plugin</artifactId>
+      <version>${tycho-version}</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.tmatesoft.svnkit</groupId>
+    	<artifactId>svnkit</artifactId>
+    	<version>1.7.5-v1</version>
+    </dependency>
+       
+   <dependency>
+            <!--
+              tycho-testing-harness depends on maven-plugin-testing-harness, which as of version 2.0-alpha-1
+              depends on maven 3.0-alpha-1, which is incompatible with tycho.
+
+              The proper solution is to update maven-plugin-testing-harness to depend on maven 3.0, but in the
+              mean time we need to force maven 3.0 here.
+             -->
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-compat</artifactId>
+            <version>${maven-version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-core</artifactId>
+				<version>${tycho-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-facade</artifactId>
+				<version>${tycho-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-testing-harness</artifactId>
+				<version>${tycho-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jgit</groupId>
+				<artifactId>org.eclipse.jgit</artifactId>
+				<version>${jgit-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.10</version>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.1</version>
+					<configuration>
+						<source>1.5</source>
+						<target>1.5</target>
+					</configuration>
+			    </plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>2.4.1</version>
+			    </plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.1</version>
+			    </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-invoker-plugin</artifactId>
+                    <version>1.6</version>
+                    <configuration>
+                        <debug>true</debug>
+                        <projectsDirectory>src/it</projectsDirectory>
+                        <cloneProjectsTo>target/it</cloneProjectsTo>
+                        <localRepositoryPath>target/local-repo</localRepositoryPath>
+                        <postBuildHookScript>verify.bsh</postBuildHookScript>
+                        <properties>
+                            <tycho-version>${tycho-version}</tycho-version>
+                            <tycho-extras-version>${project.version}</tycho-extras-version>
+                        </properties>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>integration-test</id>
+                            <goals>
+                                <goal>install</goal>
+                                <goal>run</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+				<!-- m2eclipse lifecycle mapping -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.sonatype.plugins</groupId>
+										<artifactId>maven-properties-plugin</artifactId>
+										<versionRange>[0.0.2,)</versionRange>
+										<goals>
+											<goal>filter-file</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	
+	
+   <plugins>
+   <plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
+				<configuration>          		
+        </configuration>
+			</plugin>
+		  <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-source-plugin</artifactId>
+			<executions>
+			  <execution>
+				<goals>
+				  <goal>jar-no-fork</goal>
+				</goals>
+			  </execution>
+			</executions>
+		  </plugin>		
+	
+   
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+    <!--   <plugin>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-component-metadata</artifactId>
+        <version>1.5.5</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate-metadata</goal>
+              <goal>generate-test-metadata</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+       -->
+    </plugins>
+  </build>
+  
+
+</project>
